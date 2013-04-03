@@ -1,0 +1,1 @@
+"""Strong form language generator."""
