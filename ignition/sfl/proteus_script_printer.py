@@ -29,114 +29,29 @@ from ignition.utils.proteus.optparser import get_prog_opts
 
 
 log = Profiling.logEvent
-nd = 3
+nd = %{num_dimension}d
 """
 
 problem_template = """
-class Poisson(ProteusProblem):
-    \"\"\"
-    Heterogeneous Poisson's equation, -div(a(x)u) = f(x), on unit domain [0,1]x[0,1]x[0,1]
-    \"\"\"
-
-    ##\page Tests Test Problems
-    # \ref poisson_3d_p.py "Heterogeneous Poisson's equation, -div(a(x)u) = f(x), on unit domain [0,1]x[0,1]x[0,1]"
-    #
-
-    ##\ingroup test
-    #\file poisson_3d_p.py
-    #
-    #\brief Heterogenous Poisson's equations in 3D unit domain [0,1]x[0,1]x[0,1]
+class %{name}s(ProteusProblem):
 
     def __init__(self):
-        self.name = "Poisson"
+        self.name = %{name}s
+        self.nd = %{num_dimension}d # space dimension
+        self.nc = %{num_components}d  # one component
 
-        #space dimension
-        self.nd = 3
-        #if unstructured would need variable polyfile or meshfile set
+        %{problem_settings}s
 
-        #steady-state so no initial conditions
-        self.initialConditions = None
-        #use sparse diffusion representation
-        self.sd=True
-        #identity tensor for defining analytical heterogeneity functions
-        self.Ident = np.zeros((nd,nd),'d')
-        self.Ident[0,0]=1.0; self.Ident[1,1] = 1.0; self.Ident[2,2]=1.0
-
-        #store a,f in dictionaries since coefficients class allows for one entry per component
-        self.aOfX = {0:self.a5}; self.fOfX = {0:self.f5}
-
-        #one component
-        self.nc = 1
         #load analytical solution, dirichlet conditions, flux boundary conditions into the expected variables
-        self.analyticalSolution = {0:self.u5Ex()}
-        self.analyticalSolutionVelocity = {0:self.velEx(self.analyticalSolution[0],self.aOfX[0])}
-        #
-        self.dirichletConditions = {0:self.getDBC5}
-        self.advectiveFluxBoundaryConditions =  {0:self.getAdvFluxBC5}
-        self.diffusiveFluxBoundaryConditions = {0:{0:self.getDiffFluxBC5}}
-        self.fluxBoundaryConditions = {0:'setFlow'} #options are 'setFlow','noFlow','mixedFlow'
+        self.analyticalSolution = analyticalSolution
+        self.analyticalSolutionVelocity = analyticalSolutionVelocity
 
+        self.dirichletConditions = dirichletConditions
+        self.advectiveFluxBoundaryConditions = advectiveFluxBoundaryConditions
+        self.diffusiveFluxBoundaryConditions = diffusiveFluxBoundaryConditions
+        self.fluxBoundaryConditions = fluxBoundaryConditions
 
-        #equation coefficient names
-        self.coefficients = TransportCoefficients.PoissonEquationCoefficients(self.aOfX, 
-                                                                         self.fOfX, self.nc, self.nd)
-        #
-        self.coefficients.variableNames=['u0']
-
-
-
-    #for computing exact 'Darcy' velocity
-    class velEx:
-        def __init__(self,duex,aex):
-            self.duex = duex
-            self.aex = aex
-        def uOfX(self,X):
-            du = self.duex.duOfX(X)
-            A  = np.reshape(self.aex(X),(3,3))
-            return -np.dot(A,du)
-        def uOfXT(self,X,T):
-            return self.uOfX(X)
-
-
-    ##################################################
-    #define coefficients a(x)=[a_{ij}] i,j=0,2, right hand side f(x)  and analytical solution u(x)
-    #u = x*x + y*y + z*z, a_00 = x + 5, a_11 = y + 5.0 + a_22 = z + 10.0
-    #f = -2*x -2*(5+x) -2*y-2*(5+y) -2*z-2*(10+z)
-    #
-    def a5(self, x):
-        return np.array([[x[0] + 5.0,0.0,0.0],[0.0,x[1] + 5.0,0.0],[0.0,0.0,x[2]+10.0]],'d')
-    def f5(self, x):
-        return -2.0*x[0] -2*(5.+x[0]) -2.*x[1]-2.*(5.+x[1]) -2.*x[2]-2.*(10+x[2])
-
-    #'manufactured' analytical solution
-    class u5Ex:
-        def __init__(self):
-            pass
-        def uOfX(self,x):
-            return x[0]**2+x[1]**2+x[2]**2
-        def uOfXT(self,X,T):
-            return self.uOfX(X)
-        def duOfX(self,X):
-            du = 2.0*np.reshape(X[0:3],(3,))
-            return du
-        def duOfXT(self,X,T):
-            return self.duOfX(X)
-
-    #dirichlet boundary condition functions on (x=0,y,z), (x,y=0,z), (x,y=1,z), (x,y,z=0), (x,y,z=1)
-    def getDBC5(self, x,flag):
-        if x[0] in [0.0] or x[1] in [0.0,1.0] or x[2] in [0.0,1.0]:
-            return lambda x,t: self.u5Ex().uOfXT(x,t)
-
-    def getAdvFluxBC5(self, x,flag):
-        pass
-    #specify flux on (x=1,y,z)
-    def getDiffFluxBC5(self, x,flag):
-        if x[0] == 1.0:
-            n = np.zeros((nd,),'d'); n[0]=1.0
-            return lambda x,t: np.dot(self.velEx(self.u5Ex(),self.a5).uOfXT(x,t),n)
-        if not (x[0] in [0.0] or x[1] in [0.0,1.0] or x[2] in [0.0,1.0]):
-            return lambda x,t: 0.0
-
+        %{problem_coefficents}s
 """
 
 numeric_template = """
@@ -298,27 +213,34 @@ class ProteusScriptPrinter(SFLPrinter):
     def __init__(self, generator):
         self._generator = generator
 
-    def _print_header(self, indent):
+    def _print_header(self):
         return script_header
 
-    def _print_problem_class(self, indent):
+    def _print_problem_class(self):
         ret_code = problem_template
         return ret_code
 
-    def _print_numeric_class(self, indent):
+    def _print_manufactured_solution(self):
+        ret_code = self.generator.kwargs.get('manufactured_solution_module', '')
+        if ret_code:
+            ret_code = "from %s import *\n\n" % ret_code
+        return ret_code
+
+    def _print_numeric_class(self):
         ret_code = numeric_template
         return ret_code
 
-    def _print_script_footer(self, indent):
+    def _print_script_footer(self):
         ret_code = script_foot_template
         return ret_code
 
-    def print_file(self, indent=0):
+    def print_file(self):
         ret_code = ""
-        ret_code += self._print_header(indent)
-        ret_code += self._print_problem_class(indent)
-        ret_code += self._print_numeric_class(indent)
-        ret_code += self._print_script_footer(indent)
+        ret_code += self._print_header()
+        ret_code += self._print_manufactured_solution()
+        ret_code += self._print_problem_class()
+        ret_code += self._print_numeric_class()
+        ret_code += self._print_script_footer()
         return ret_code
 
     

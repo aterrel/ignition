@@ -9,8 +9,9 @@ class SFLGenerator(object):
     """Base class for strong form language generator.
 
     """
-    def __init__(self, expr):
+    def __init__(self, expr, **kwargs):
         self.expr = expr
+        self.kwargs = kwargs
 
     def generate(self):
         pass
@@ -36,8 +37,8 @@ class UFLGenerator(SFLGenerator):
             f.write(self.generate())
 
 
-def generate(framework, expr):
+def generate(framework, expr, **kwargs):
     """Generates the equation in a lower level framework"""
     if framework == "proteus":
-        return ProteusGenerator(expr)
+        return ProteusGenerator(expr, **kwargs)
     
