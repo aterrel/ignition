@@ -4,20 +4,20 @@ Solves the Heterogeneous Poisson equation on a unit cube. A full
 script for testing generation and tools provided by proteus.
 """
 
-import numpy as np
 import sys
 
-from proteus import Comm, Profiling, NumericalSolution, TransportCoefficients, default_so, default_s
-from proteus.FemTools import C0_AffineLinearOnSimplexWithNodalBasis
-from proteus.LinearSolvers import LU
-from proteus.NonlinearSolvers import Newton
-from proteus.NumericalFlux import Advection_DiagonalUpwind_Diffusion_IIPG_exterior
-from proteus.Quadrature import SimplexGaussQuadrature
-from proteus.superluWrappers import SparseMatrix
-from proteus.TimeIntegration import NoIntegration
+import numpy as np
 
-from ignition.utils.proteus.defaults import ProteusProblem, ProteusNumerics
-from ignition.utils.proteus.optparser import get_prog_opts
+from ignition.utils.proteus import ProteusProblem, ProteusNumerics, get_prog_opts
+from ignition.utils.proteus import Comm, Profiling, NumericalSolution, TransportCoefficients, default_so, default_s
+from ignition.utils.proteus.FemTools import C0_AffineLinearOnSimplexWithNodalBasis
+from ignition.utils.proteus.LinearSolvers import LU
+from ignition.utils.proteus.NonlinearSolvers import Newton
+from ignition.utils.proteus.NumericalFlux import Advection_DiagonalUpwind_Diffusion_IIPG_exterior
+from ignition.utils.proteus.Quadrature import SimplexGaussQuadrature
+from ignition.utils.proteus.superluWrappers import SparseMatrix
+from ignition.utils.proteus.TimeIntegration import NoIntegration
+
 
 log = Profiling.logEvent
 nd = 3

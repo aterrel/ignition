@@ -1,5 +1,6 @@
 from ignition.dsl.sfl.language import *
-from ignition.utils.proteus.coefficient import sfl_coefficient
+from ignition.utils.proteus import sfl_coefficient
+
 
 def test_poisson():
     u = Variable('u', dim=3, space='L2')
