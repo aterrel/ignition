@@ -69,8 +69,6 @@ class ProteusCoefficientGenerator(SFLGenerator):
         return os.path.basename(self.filename).replace('.py', '')
 
     def gen_transport_coefficient_dictionary(self):
-        ret_dict = {}
-
         if self.variables is None:
             self.variables = OrderedSet(flatten(map(lambda x: x.variables(),
                                                     self.strong_forms)))
@@ -82,7 +80,10 @@ class ProteusCoefficientGenerator(SFLGenerator):
             for var_idx, variable in enumerate(self.variables):
                 for eqn_part, eqn in transport_coefficients.iteritems():
                     eqn_dict = ret_dict[eqn_part].get(sf_idx, {})
-                    eqn_dict[var_idx] = StrongForm.extract_order(eqn, variable)
+                    if eqn_part in ['potential', 'diffusion']:
+                        eqn_dict[var_idx] = {var_idx: StrongForm.extract_order(eqn, variable)}
+                    else:
+                        eqn_dict[var_idx] = StrongForm.extract_order(eqn, variable)
                     ret_dict[eqn_part][sf_idx] = eqn_dict
         return ret_dict
 

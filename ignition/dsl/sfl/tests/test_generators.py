@@ -14,8 +14,8 @@ def test_proteus_coefficient_create_order_dictionary():
 
     tc_dict = {'mass': {0: {0: 'linear'}},
                'advection': {0: {0: 'linear'}},
-               'diffusion': {0: {0: 'constant'}},
-               'potential': {0: {0: 'linear'}},
+               'diffusion': {0: {0: {0: 'constant'}}},
+               'potential': {0: {0: {0: 'linear'}}},
                'reaction': {0: {0: 'linear'}},
                'hamiltonian': {0: {0: 'linear'}},
                }
