@@ -9,7 +9,7 @@ def sfl_coefficient(strong_form, *args, **kws):
 
     args and kws are passed to the constructor of that instance.
     """
-    generator = ProteusCoefficientGenerator(strong_form)
+    generator = ProteusCoefficientGenerator(strong_form, **kws)
     generator.to_file()
     sys.path.append(generator.module_path)
     mod = __import__(generator.module_name)

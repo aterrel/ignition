@@ -243,7 +243,7 @@ class PythonCodePrinter(CodePrinter):
             func_name = "__init__"
         func_args = ""
         inputs = sorted(func_node.inputs, key=lambda x: x.var_init is not None)
-        for var in func_node.inputs:
+        for var in inputs:
             if var.var_init is not NIL:
                 func_args += var.var_name + "=" + repr(var.var_init)
             else:
@@ -251,6 +251,8 @@ class PythonCodePrinter(CodePrinter):
             func_args += ", "
         if func_node.class_member:
             func_args = ", ".join(("self", func_args))
+        if func_node.variadic:
+            func_args += "*args, **kws"
         return "def %(func_name)s(%(func_args)s):\n" \
                % {'func_name': func_name,
                   'func_args': func_args,

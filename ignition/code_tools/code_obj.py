@@ -154,7 +154,7 @@ class FunctionNode(BlockNode):
     name = "functionnode"
 
     def __init__(self, func_name, ret_type=None, inputs=None, output=None,
-                 member_function=False):
+                 member_function=False, variadic=False):
         super(FunctionNode, self).__init__()
         self.func_name = func_name
         self.ret_type = ret_type
@@ -165,6 +165,7 @@ class FunctionNode(BlockNode):
         self.inputs = [] if inputs is None else inputs
         self.output = output
         self.member_function = member_function
+        self.variadic = variadic
 
     def add_return(self, variable):
         self.outputs.append(variable)

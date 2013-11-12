@@ -35,6 +35,8 @@ class ProteusCoefficientGenerator(SFLGenerator):
         self._classname = None
         self.class_dag = None
         self.modules = OrderedSet()
+        self._set_base_class(kwargs.get("base_class"))
+        self.gen_evaluate = kwargs.get("gen_evaluate", True)
 
     @property
     def filename(self):
@@ -59,6 +61,14 @@ class ProteusCoefficientGenerator(SFLGenerator):
                     .title().replace("_", "") \
                     + "Coefficients"
         return self._classname
+
+    def _set_base_class(self, base_class):
+        if base_class is None:
+            self.base_class_name = "TC_base"
+            self.base_class_import = "from proteus.TransportCoefficient import TC_base"
+        else:
+            self.base_class_name = base_class.__name__
+            self.base_class_import = "from %s import %s" % (base_class.__module__, base_class.__name__)
 
     @property
     def module_path(self):
@@ -87,9 +97,7 @@ class ProteusCoefficientGenerator(SFLGenerator):
                     ret_dict[eqn_part][sf_idx] = eqn_dict
         return ret_dict
 
-
     def gen_init_func_node(self):
-        # XXX: Much hardcoded here.
         nc = code_obj.Variable("nc", int, var_init=1)
         _M, _A, _B, _C = map(lambda x: code_obj.Variable(x, int, var_init=[0]),
                              ["M", "A", "B", "C"])
@@ -98,7 +106,7 @@ class ProteusCoefficientGenerator(SFLGenerator):
                                                bool, var_init=True)
         default_input_vars = [_M, _A, _B, _C, _rFunc, useSparseDiffusion]
         inputs = [nc] + default_input_vars
-        constructor = self.class_dag.create_constructor(inputs=inputs)
+        constructor = self.class_dag.create_constructor(inputs=inputs, variadic=True)
 
         member_names = ["M", "A", "B", "C"]
         M, A, B, C = map(lambda (x, v): code_obj.IndexedVariable(x, int,
@@ -122,8 +130,8 @@ class ProteusCoefficientGenerator(SFLGenerator):
             constructor.add_statement("=", variable, str(coeff_dict[name]))
 
         init_args = ["self", nc] + tmp_names + ["useSparseDiffusion = useSparseDiffusion"]
-        constructor.add_statement("%s.__init__" % self.class_dag.parents[0],
-                                  *init_args)
+        # Only init TC_Base since I don't have arguments to other base class.
+        constructor.add_statement("TC_base.__init__", *init_args)
 
     def gen_evaluate_func_node(self):
         #XXX: much hardcoded here
@@ -175,11 +183,14 @@ if self.rFunc != None:
             self._classname = classname
         self.modules.add("import proteus")
         self.modules.add("from proteus.TransportCoefficients import TC_base")
+        self.modules.add(self.base_class_import)
         self.class_dag = code_obj.ClassNode(self.classname,
-                                             parents=["TC_base"])
-        self.class_dag.add_object(code_obj.Blurb("from proteus.ctransportCoefficients import linearADR_ConstantCoefficientsEvaluate"))
+                                            parents=[self.base_class_name])
+        if self.gen_evaluate:
+            self.class_dag.add_object(code_obj.Blurb("from proteus.ctransportCoefficients import linearADR_ConstantCoefficientsEvaluate"))
         self.gen_init_func_node()
-        self.gen_evaluate_func_node()
+        if self.gen_evaluate:
+            self.gen_evaluate_func_node()
 
     def to_file(self, filename=None):
         self.gen_coefficient_class()
