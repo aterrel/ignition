@@ -6,7 +6,7 @@
 Ignition: a numerical code generation tool
 ==========================================
 
-`Ignition <http://andy.terrel.us/ignition>`_ is a Python library for defining
+`Ignition <http://ignitionproject.github.io/ignition/>`_ is a Python library for defining
 domain specific languages and generating high performance code.  The current
 code is in development mode, but this webpage is the documentation of what is
 currently available.

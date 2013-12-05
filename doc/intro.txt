@@ -13,8 +13,8 @@ Current languages
 -----------------
 
 Currently, the project has a reference language and generator for integral
-equations, called IntGen.  We are also working on an automation engine for the
-FLAME project that includes dense and sparse linear algebra methods.
+equations, called IntGen. It also has several interesting languages
+for specific domains: 
 
 IntGen
 ------
@@ -34,6 +34,25 @@ As the project grows, IntGen may grow to do more but currently it is left to be
 simple allowing for novices to understand the basics of how Ignition implements
 DSL's and code generators.
 
+SFL
+---
+
+SFL, or Strong Form Language, is an embedded language for describing
+PDE equations in the strong form.  Taking its cue from the `UFL`_
+project, it presents a high level abstraction allowing for
+mathematical models to be rapidly prototyped and new simulations
+generated.
+
+
+Riemann
+-------
+
+Riemann is a simple language for defining Riemann problems in the style of
+`CLAWPACK`_. It allows a user to symbolically define the flux (or jacobian)
+based on the variables of the conserved state and will generate the kernel to
+be run at the cell interfaces.
+
+
 FLAME
 -----
 
@@ -46,21 +65,7 @@ derived and allow for numerous variants to be produced.
 Ignition defines a language for specifying FLAME operation and generating the
 worksheets and code.  These operations are still under development.
 
-Riemann
--------
 
-Riemann is a simple language for defining Riemann problems in the style of
-`CLAWPACK`_. It allows a user to symbolically define the flux (or jacobian)
-based on the variables of the conserved state and will generate the kernel to
-be run at the cell interfaces.
-
-------
-Future
-------
-
-In the future we hope to add more application areas to the project.  The next
-area of interest will most likely be finite element algorithms.
-
-
+.. _UFL: http://fenicsproject.org/documentation/ufl/dev/ufl.html
 .. _FLAME: http://z.cs.utexas.edu/wiki/flame.wiki/FrontPage
 .. _CLAWPACK: http://clawpack.org/
